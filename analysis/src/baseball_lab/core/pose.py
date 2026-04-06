@@ -155,12 +155,14 @@ class PoseAnalyzer(BaseAnalyzer):
         # 2. グリップ位置（拳の重心）の算出
         curr_grip_raw = None
         if raw_lms:
-            l_fist_ids = [15, 17, 19]
-            r_fist_ids = [16, 18, 20]
+            # 親指(21, 22)を追加
+            l_fist_ids = [15, 17, 19, 21]
+            r_fist_ids = [16, 18, 20, 22]
 
             def get_fist_center(ids):
                 lms = [self._get_raw_landmark(raw_lms, i) for i in ids]
-                lms = [lm for lm in lms if lm is not None]
+                # 視認性が極端に低いノイズを除外
+                lms = [lm for lm in lms if lm is not None and lm.get("visibility", 0) >= 0.1]
                 if not lms:
                     return None
 
@@ -172,20 +174,38 @@ class PoseAnalyzer(BaseAnalyzer):
                     "x": sum(lm["x"] * lm["visibility"] for lm in lms) / total_v,
                     "y": sum(lm["y"] * lm["visibility"] for lm in lms) / total_v,
                     "z": sum(lm["z"] * lm["visibility"] for lm in lms) / total_v,
-                    "visibility": total_v / len(ids),
+                    "visibility": total_v / len(ids),  # 全体に対する信頼度
                 }
 
             l_fist = get_fist_center(l_fist_ids)
             r_fist = get_fist_center(r_fist_ids)
 
             if l_fist and r_fist:
-                lv = max(l_fist["visibility"], 0.01)
-                rv = max(r_fist["visibility"], 0.01)
-                sum_v = lv + rv
-                curr_grip_raw = {
-                    k: (l_fist[k] * lv + r_fist[k] * rv) / sum_v
-                    for k in ["x", "y", "z"]
-                }
+                # 異常距離のチェック (手同士が離れすぎている場合は誤認識とみなす)
+                dist = math.hypot(l_fist["x"] - r_fist["x"], l_fist["y"] - r_fist["y"])
+                
+                lv = l_fist["visibility"]
+                rv = r_fist["visibility"]
+
+                if dist > 0.2:
+                    # 離れすぎている場合は視認性の高い方を採用
+                    if lv > rv:
+                        curr_grip_raw = l_fist
+                    else:
+                        curr_grip_raw = r_fist
+                elif lv > 0.8 and rv < 0.3:
+                    # 片手が極端に隠れている場合
+                    curr_grip_raw = l_fist
+                elif rv > 0.8 and lv < 0.3:
+                    curr_grip_raw = r_fist
+                else:
+                    lv_weight = max(lv, 0.01)
+                    rv_weight = max(rv, 0.01)
+                    sum_v = lv_weight + rv_weight
+                    curr_grip_raw = {
+                        k: (l_fist[k] * lv_weight + r_fist[k] * rv_weight) / sum_v
+                        for k in ["x", "y", "z"]
+                    }
             elif l_fist:
                 curr_grip_raw = l_fist
             elif r_fist:

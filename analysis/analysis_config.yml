@@ -14,7 +14,7 @@ analyzer:
     # フィルタリング関連 (One Euro Filter)
     filter:
       mincutoff: 0.05
-      beta: 0.01
+      beta: 0.1
       hard_reset_threshold: 0.1  # 正規化座標でのズレ許容量
 
     # 平滑化（指数移動平均）の重み
