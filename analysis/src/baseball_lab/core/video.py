@@ -91,10 +91,14 @@ def visualize_pose(
             metrics = pose_result.get("metrics", {})
             max_speed = metrics.get("max_grip_speed", 0.0)
             max_sep = metrics.get("max_separation", 0.0)
+            
+            bat_result = frame_analysis.get("bat", {})
+            bat_metrics = bat_result.get("metrics", {})
+            max_bat_speed = bat_metrics.get("max_bat_speed", 0.0)
 
             # テキスト背景（半透明の黒い矩形）
             overlay = frame.copy()
-            cv2.rectangle(overlay, (10, 10), (350, 110), (0, 0, 0), -1)
+            cv2.rectangle(overlay, (10, 10), (380, 150), (0, 0, 0), -1)
             cv2.addWeighted(overlay, 0.5, frame, 0.5, 0, frame)
 
             # 最大値を表示
@@ -109,8 +113,17 @@ def visualize_pose(
             )
             cv2.putText(
                 frame,
-                f"MAX SEPARATION: {max_sep:>5.1f} deg",
+                f"MAX SWING SPEED: {max_bat_speed:>5.1f} km/h",
                 (20, 90),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 165, 255),  # オレンジ色
+                2,
+            )
+            cv2.putText(
+                frame,
+                f"MAX SEPARATION: {max_sep:>5.1f} deg",
+                (20, 130),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
                 (200, 255, 0),
@@ -118,7 +131,6 @@ def visualize_pose(
             )
 
             # --- 3. バット (Bat) の描画 ---
-            bat_result = frame_analysis.get("bat", {})
             detections = bat_result.get("detections", [])
             for det in detections:
                 bbox = det.get("bbox")
