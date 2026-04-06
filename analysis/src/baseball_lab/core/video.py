@@ -63,8 +63,8 @@ def visualize_pose(
         if not ret:
             break
 
-        # スロー動画のフレームから解析データのインデックスを算出（同期）
-        data_idx = frame_idx // slow_mo_factor
+        # 等倍動画のフレームから解析データ（スロー解析時の高密度データ）のインデックスを算出（同期）
+        data_idx = frame_idx * slow_mo_factor
 
         if data_idx < len(analysis_data):
             frame_analysis = analysis_data[data_idx].get("analysis", {})

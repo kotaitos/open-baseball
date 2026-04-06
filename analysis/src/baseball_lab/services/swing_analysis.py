@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import subprocess
 
 import cv2
 import yaml
@@ -33,51 +34,60 @@ class SwingAnalysisService:
         self.analyzer = SwingAnalyzer(player_height_m=player_height_m, config=config)
         self.player_height_m = player_height_m
 
-    def _create_slow_mo_visual(
+    def _prepare_videos(
         self,
         video_path: str,
         slow_mo_factor: int,
         video_interim_dir: str,
         start_sec: float = 0.0,
         end_sec: float = None,
-    ) -> str:
+    ) -> tuple[str, str]:
         """
-        可視化用のスローモーション動画を指定区間（秒）で作成します。
+        ffmpegを使用して、可視化用の等倍動画と、解析用の補間スローモーション動画を作成します。
         """
         os.makedirs(video_interim_dir, exist_ok=True)
+        trimmed_path = os.path.join(video_interim_dir, "trimmed.mp4")
         slow_path = os.path.join(video_interim_dir, "preprocessed.mp4")
 
-        # 再生成を強制するために古いファイルは削除（設定変更の反映）
-        if os.path.exists(slow_path):
-            os.remove(slow_path)
-
+        # 動画情報を取得
         cap = cv2.VideoCapture(video_path)
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = cap.get(cv2.CAP_PROP_FPS)
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        out = cv2.VideoWriter(slow_path, fourcc, fps, (width, height))
-
-        start_frame = int(fps * start_sec)
-        end_frame = (
-            int(fps * end_sec)
-            if end_sec is not None
-            else int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        )
-
-        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-        current_frame = start_frame
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret or current_frame >= end_frame:
-                break
-            for _ in range(slow_mo_factor):
-                out.write(frame)
-            current_frame += 1
         cap.release()
-        out.release()
-        return slow_path
+
+        duration_cmd = []
+        if end_sec is not None:
+            duration_cmd = ["-t", str(end_sec - start_sec)]
+
+        # 1. 等倍切り出し動画の作成
+        cmd_trimmed = [
+            "ffmpeg", "-y",
+            "-ss", str(start_sec),
+        ] + duration_cmd + [
+            "-i", video_path,
+            "-c:v", "libx264", "-crf", "18",
+            trimmed_path
+        ]
+        
+        # 2. 補間スロー動画の作成 (minterpolateを使用)
+        # mi_mode=blend は高速で、速度計算の物理的一貫性を保つのに適しています
+        target_fps = fps * slow_mo_factor
+        cmd_slow = [
+            "ffmpeg", "-y",
+            "-ss", str(start_sec),
+        ] + duration_cmd + [
+            "-i", video_path,
+            "-vf", f"minterpolate=fps={target_fps}:mi_mode=blend",
+            "-c:v", "libx264", "-crf", "18",
+            slow_path
+        ]
+
+        print(f"Creating trimmed video: {' '.join(cmd_trimmed)}")
+        subprocess.run(cmd_trimmed, check=True, capture_output=True)
+        
+        print(f"Creating interpolated slow-mo video ({target_fps} fps): {' '.join(cmd_slow)}")
+        subprocess.run(cmd_slow, check=True, capture_output=True)
+
+        return trimmed_path, slow_path
 
     def run(self, input_dir: str, output_dir: str, slow_mo: int):
         video_files = glob.glob(os.path.join(input_dir, "*.mp4"))
@@ -97,22 +107,19 @@ class SwingAnalysisService:
             start_sec = settings.get("start_sec", 0.0)
             end_sec = settings.get("end_sec", None)
 
-            # 1. スロー動画作成（可視化用）
-            self._create_slow_mo_visual(
+            # 1. 解析用スロー動画と可視化用等倍動画の作成
+            trimmed_path, slow_path = self._prepare_videos(
                 video_path, slow_mo, video_interim_dir, start_sec, end_sec
             )
 
-            # 2. 解析（生データで行う - GEMINI.md 原則）
+            # 2. 解析（精度向上のため補間スロー動画で行う）
             output_path = os.path.join(video_interim_dir, "analysis.json")
-            print(f"Analyzing RAW video ({start_sec}s - {end_sec}s): {video_path}...")
-            # 生データなので speed_multiplier=1.0。
-            # start_sec, end_sec を渡して必要な区間のみ解析する。
+            print(f"Analyzing interpolated video for accuracy: {slow_path}...")
+            # 動画自体が高密度FPS(例:120fps)で保存されているため、multiplierは1.0で物理的に正しくなる
             self.analyzer.analyze_video(
-                video_path,
+                slow_path,
                 output_path,
                 speed_multiplier=1.0,
-                start_sec=start_sec,
-                end_sec=end_sec,
             )
 
             with open(os.path.join(video_interim_dir, "meta.json"), "w") as f:

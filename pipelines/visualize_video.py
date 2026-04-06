@@ -8,7 +8,7 @@ from baseball_lab.core.video import visualize_pose
 
 def main():
     parser = argparse.ArgumentParser(
-        description="スロー映像に通常倍速の解析結果を同期させて可視化します。"
+        description="等倍映像にスロー解析結果を同期させて可視化します。"
     )
     parser.add_argument(
         "--interim_dir", default="data/interim", help="中間データディレクトリ"
@@ -41,11 +41,11 @@ def main():
     for video_dir in video_dirs:
         video_name = os.path.basename(video_dir)
         json_path = os.path.join(video_dir, "analysis.json")
-        preprocessed_video_path = os.path.join(video_dir, "preprocessed.mp4")
+        trimmed_video_path = os.path.join(video_dir, "trimmed.mp4")
         meta_path = os.path.join(video_dir, "meta.json")
 
         if not all(
-            os.path.exists(p) for p in [json_path, preprocessed_video_path, meta_path]
+            os.path.exists(p) for p in [json_path, trimmed_video_path, meta_path]
         ):
             continue
 
@@ -58,9 +58,9 @@ def main():
         os.makedirs(video_output_dir, exist_ok=True)
         output_video_path = os.path.join(video_output_dir, "visualized.mp4")
 
-        print(f"Visualizing {video_name} (Slow Factor: {slow_mo_factor}x)...")
+        print(f"Visualizing {video_name} at original speed (Slow Factor: {slow_mo_factor}x)...")
         visualize_pose(
-            preprocessed_video_path,
+            trimmed_video_path,
             json_path,
             output_video_path,
             slow_mo_factor=slow_mo_factor,
