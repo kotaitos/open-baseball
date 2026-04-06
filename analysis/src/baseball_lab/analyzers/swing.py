@@ -51,7 +51,9 @@ class SwingAnalyzer:
         # 終了位置の決定
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         end_frame = (
-            min(int(fps * end_sec), total_frames) if end_sec is not None else total_frames
+            min(int(fps * end_sec), total_frames)
+            if end_sec is not None
+            else total_frames
         )
 
         results_data = []

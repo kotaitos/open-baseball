@@ -1,4 +1,4 @@
-.PHONY: setup analyze visualize run clean
+.PHONY: setup analyze visualize run clean format check
 
 # Default parameters
 SLOW_MO ?= 4
@@ -19,3 +19,7 @@ run: analyze visualize
 clean:
 	rm -rf ../data/interim/$(PLAYER)/*
 	rm -rf ../data/processed/$(PLAYER)/*
+
+check:
+	uv run --active ruff check . --fix
+

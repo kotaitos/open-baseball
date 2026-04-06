@@ -9,38 +9,8 @@ from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions
 
 from baseball_lab.analyzers.base import BaseAnalyzer
+from baseball_lab.core.filter import OneEuroFilter
 from baseball_lab.core.metrics import calculate_distance_3d, calculate_rotation
-
-
-class OneEuroFilter:
-    """高速な動きへの追従と低速時のノイズ除去を両立するフィルタ"""
-
-    def __init__(self, freq, mincutoff=1.0, beta=0.007, dcutoff=1.0):
-        self.freq = freq
-        self.mincutoff = mincutoff
-        self.beta = beta
-        self.dcutoff = dcutoff
-        self.x_prev = None
-        self.dx_prev = 0
-
-    def _alpha(self, cutoff):
-        tau = 1.0 / (2 * math.pi * cutoff)
-        te = 1.0 / self.freq
-        return 1.0 / (1.0 + tau / te)
-
-    def filter(self, x):
-        if self.x_prev is None:
-            self.x_prev = x
-            return x
-
-        dx = (x - self.x_prev) * self.freq
-        edx = self.dx_prev + (self._alpha(self.dcutoff) * (dx - self.dx_prev))
-        cutoff = self.mincutoff + self.beta * abs(edx)
-
-        result = self.x_prev + (self._alpha(cutoff) * (x - self.x_prev))
-        self.x_prev = result
-        self.dx_prev = edx
-        return result
 
 
 class PoseAnalyzer(BaseAnalyzer):
@@ -190,18 +160,18 @@ class PoseAnalyzer(BaseAnalyzer):
 
             def get_fist_center(ids):
                 lms = [self._get_raw_landmark(raw_lms, i) for i in ids]
-                lms = [l for l in lms if l is not None]
+                lms = [lm for lm in lms if lm is not None]
                 if not lms:
                     return None
 
-                total_v = sum(l["visibility"] for l in lms)
+                total_v = sum(lm["visibility"] for lm in lms)
                 if total_v < 0.1:
                     return None
 
                 return {
-                    "x": sum(l["x"] * l["visibility"] for l in lms) / total_v,
-                    "y": sum(l["y"] * l["visibility"] for l in lms) / total_v,
-                    "z": sum(l["z"] * l["visibility"] for l in lms) / total_v,
+                    "x": sum(lm["x"] * lm["visibility"] for lm in lms) / total_v,
+                    "y": sum(lm["y"] * lm["visibility"] for lm in lms) / total_v,
+                    "z": sum(lm["z"] * lm["visibility"] for lm in lms) / total_v,
                     "visibility": total_v / len(ids),
                 }
 

@@ -8,7 +8,9 @@ class BaseAnalyzer(ABC):
     """
 
     @abstractmethod
-    def analyze_frame(self, frame, frame_idx: int, fps: float, context: dict = None) -> Any:
+    def analyze_frame(
+        self, frame, frame_idx: int, fps: float, context: dict = None
+    ) -> Any:
         """
         フレームごとに解析を実行します。
         """

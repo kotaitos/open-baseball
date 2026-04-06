@@ -1,14 +1,19 @@
-import os
 import glob
-import cv2
 import json
+import os
+
+import cv2
 import yaml
+
 from baseball_lab.analyzers.swing import SwingAnalyzer
+
 
 class SwingAnalysisService:
     def __init__(self, player_height_m: float = 1.93):
         # 1. 解析アルゴリズム設定 (analysis/analysis_config.yml)
-        config_path = os.path.join(os.path.dirname(__file__), "../../../analysis_config.yml")
+        config_path = os.path.join(
+            os.path.dirname(__file__), "../../../analysis_config.yml"
+        )
         config = {}
         if os.path.exists(config_path):
             with open(config_path, "r") as f:
@@ -17,7 +22,9 @@ class SwingAnalysisService:
                     config = config_data["analyzer"]
 
         # 2. 動画レジストリ（切り出し区間など - プロジェクトルート/video_registry.yml）
-        registry_path = os.path.join(os.path.dirname(__file__), "../../../../video_registry.yml")
+        registry_path = os.path.join(
+            os.path.dirname(__file__), "../../../../video_registry.yml"
+        )
         self.video_registry = {}
         if os.path.exists(registry_path):
             with open(registry_path, "r") as f:
@@ -26,7 +33,14 @@ class SwingAnalysisService:
         self.analyzer = SwingAnalyzer(player_height_m=player_height_m, config=config)
         self.player_height_m = player_height_m
 
-    def _create_slow_mo_visual(self, video_path: str, slow_mo_factor: int, video_interim_dir: str, start_sec: float = 0.0, end_sec: float = None) -> str:
+    def _create_slow_mo_visual(
+        self,
+        video_path: str,
+        slow_mo_factor: int,
+        video_interim_dir: str,
+        start_sec: float = 0.0,
+        end_sec: float = None,
+    ) -> str:
         """
         可視化用のスローモーション動画を指定区間（秒）で作成します。
         """
@@ -45,8 +59,12 @@ class SwingAnalysisService:
         out = cv2.VideoWriter(slow_path, fourcc, fps, (width, height))
 
         start_frame = int(fps * start_sec)
-        end_frame = int(fps * end_sec) if end_sec is not None else int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        
+        end_frame = (
+            int(fps * end_sec)
+            if end_sec is not None
+            else int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        )
+
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
         current_frame = start_frame
 
@@ -64,7 +82,7 @@ class SwingAnalysisService:
     def run(self, input_dir: str, output_dir: str, slow_mo: int):
         video_files = glob.glob(os.path.join(input_dir, "*.mp4"))
         video_files = [f for f in video_files if "_slow_" not in f]
-        
+
         # 動画リストの取得
         video_configs = self.video_registry.get("videos", {})
         registry_defaults = self.video_registry.get("defaults", {})
@@ -80,7 +98,9 @@ class SwingAnalysisService:
             end_sec = settings.get("end_sec", None)
 
             # 1. スロー動画作成（可視化用）
-            slow_path = self._create_slow_mo_visual(video_path, slow_mo, video_interim_dir, start_sec, end_sec)
+            self._create_slow_mo_visual(
+                video_path, slow_mo, video_interim_dir, start_sec, end_sec
+            )
 
             # 2. 解析（生データで行う - GEMINI.md 原則）
             output_path = os.path.join(video_interim_dir, "analysis.json")

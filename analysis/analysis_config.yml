@@ -13,13 +13,13 @@ analyzer:
 
     # フィルタリング関連 (One Euro Filter)
     filter:
-      mincutoff: 0.5
-      beta: 0.1
+      mincutoff: 0.05
+      beta: 0.01
       hard_reset_threshold: 0.1  # 正規化座標でのズレ許容量
 
     # 平滑化（指数移動平均）の重み
     smoothing:
-      grip_speed_weight: 0.8
+      grip_speed_weight: 0.6
       separation_weight: 0.5
 
     # メトリクス制約

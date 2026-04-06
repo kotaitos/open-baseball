@@ -1,15 +1,36 @@
 import cv2
 import json
-import numpy as np
 
 # MediaPipe ポーズコネクションの定義（骨格のつながり）
 POSE_CONNECTIONS = [
-    (11, 12), (11, 13), (13, 15), (15, 17), (15, 19), (15, 21), (17, 19),
-    (12, 14), (14, 16), (16, 18), (16, 20), (16, 22), (18, 20),
-    (11, 23), (12, 24), (23, 24),
-    (23, 25), (24, 26), (25, 27), (26, 28),
-    (27, 29), (28, 30), (29, 31), (30, 32), (27, 31), (28, 32)
+    (11, 12),
+    (11, 13),
+    (13, 15),
+    (15, 17),
+    (15, 19),
+    (15, 21),
+    (17, 19),
+    (12, 14),
+    (14, 16),
+    (16, 18),
+    (16, 20),
+    (16, 22),
+    (18, 20),
+    (11, 23),
+    (12, 24),
+    (23, 24),
+    (23, 25),
+    (24, 26),
+    (25, 27),
+    (26, 28),
+    (27, 29),
+    (28, 30),
+    (29, 31),
+    (30, 32),
+    (27, 31),
+    (28, 32),
 ]
+
 
 def visualize_pose(
     video_path: str,
@@ -47,7 +68,7 @@ def visualize_pose(
 
         if data_idx < len(analysis_data):
             frame_analysis = analysis_data[data_idx].get("analysis", {})
-            
+
             # --- 1. 骨格 (Pose) の描画 ---
             pose_result = frame_analysis.get("pose", {})
             landmarks = pose_result.get("landmarks", [])
@@ -77,10 +98,24 @@ def visualize_pose(
             cv2.addWeighted(overlay, 0.5, frame, 0.5, 0, frame)
 
             # 最大値を表示
-            cv2.putText(frame, f"MAX GRIP SPEED: {max_speed:>5.1f} km/h", (20, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-            cv2.putText(frame, f"MAX SEPARATION: {max_sep:>5.1f} deg", (20, 90),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 255, 0), 2)
+            cv2.putText(
+                frame,
+                f"MAX GRIP SPEED: {max_speed:>5.1f} km/h",
+                (20, 50),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 255),
+                2,
+            )
+            cv2.putText(
+                frame,
+                f"MAX SEPARATION: {max_sep:>5.1f} deg",
+                (20, 90),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (200, 255, 0),
+                2,
+            )
 
             # --- 3. バット (Bat) の描画 ---
             bat_result = frame_analysis.get("bat", {})
