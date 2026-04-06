@@ -1,0 +1,11 @@
+# 動画ごとの登録データ（トリミング区間など）
+videos:
+  "Shohei_Ohtani_Swing_Mechanics_2025_mlb_mlb2025_baseballhighlights_baseballviral_homerun":
+    start_sec: 0.0
+    end_sec: 2.5
+    flip: false  # 必要に応じて左右反転など
+
+# 設定がない場合のデフォルト
+defaults:
+  start_sec: 0.0
+  end_sec: 10.0

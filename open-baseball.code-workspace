@@ -1,0 +1,48 @@
+{
+	"folders": [
+		{
+			"name": "root",
+			"path": "."
+		},
+		{
+			"name": "analysis",
+			"path": "analysis"
+		},
+		{
+			"name": "pipelines",
+			"path": "pipelines"
+		},
+		{
+			"name": "data",
+			"path": "data"
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "${workspaceFolder:analysis}/.venv/bin/python",
+		"python.languageServer": "Pylance",
+		"python.analysis.extraPaths": [
+			"${workspaceFolder:analysis}/src"
+		],
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "charliermarsh.ruff",
+		"editor.codeActionsOnSave": {
+			"source.fixAll.ruff": "explicit",
+			"source.organizeImports.ruff": "explicit"
+		},
+		"files.exclude": {
+			"**/.venv": true,
+			"**/__pycache__": true,
+			"**/.DS_Store": true,
+			"analysis": true,
+			"pipelines": true,
+			"data": true
+		},
+		"[python]": {
+			"editor.defaultFormatter": "charliermarsh.ruff",
+			"editor.formatOnSave": true
+		},
+		"ruff.enable": true,
+		"ruff.organizeImports": true,
+		"ruff.fixAll": true
+	}
+}

@@ -1,0 +1,16 @@
+# 選手データ定義
+players:
+  Shohei_Ohtani:
+    name_display: "Shohei Ohtani"
+    height_m: 1.93
+  
+  Aaron_Judge:
+    name_display: "Aaron Judge"
+    height_m: 2.01
+
+  Seiya_Suzuki:
+    name_display: "Seiya Suzuki"
+    height_m: 1.81
+
+defaults:
+  height_m: 1.80

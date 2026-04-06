@@ -1,0 +1,48 @@
+analyzer:
+  pose:
+    # 身体寸法関連
+    body_height_to_stem_ratio: 0.85
+
+    # ランドマーク視認性の閾値
+    min_landmark_visibility: 0.15
+    min_grip_visibility: 0.5
+    
+    # 欠損補完関連
+    grip_velocity_decay: 0.99
+    max_gap_frames: 20
+
+    # フィルタリング関連 (One Euro Filter)
+    filter:
+      mincutoff: 0.5
+      beta: 0.1
+      hard_reset_threshold: 0.1  # 正規化座標でのズレ許容量
+
+    # 平滑化（指数移動平均）の重み
+    smoothing:
+      grip_speed_weight: 0.8
+      separation_weight: 0.5
+
+    # メトリクス制約
+    max_grip_speed_kmh: 160.0
+
+    # MediaPipe設定
+    mediapipe:
+      min_pose_detection_confidence: 0.5
+      min_pose_presence_confidence: 0.5
+      min_tracking_confidence: 0.6
+
+  bat:
+    # ... (既存のbat設定) ...
+    max_speed_kmh: 150.0
+
+# 動画ごとの切り出し設定（秒）
+trim_settings:
+  # 動画ファイル名 (拡張子なし): {start: 開始秒, end: 終了秒}
+  "Shohei_Ohtani_Swing_Mechanics_2025_mlb_mlb2025_baseballhighlights_baseballviral_homerun":
+    start_sec: 0.0
+    end_sec: 2.5
+  
+  # デフォルト（設定がない場合）
+  default:
+    start_sec: 0.0
+    end_sec: 5.0

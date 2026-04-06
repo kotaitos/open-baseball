@@ -1,0 +1,5 @@
+models:
+  - name: mediapipe_pose_heavy
+    url: https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
+    path: src/baseball_lab/core/pose_landmarker_heavy.task
+    description: "MediaPipe Pose Landmarker (Heavy) for 3D pose estimation"
