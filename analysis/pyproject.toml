@@ -10,7 +10,6 @@ dependencies = [
     "google-api-python-client",
     "google-auth-oauthlib",
     "google-auth-httplib2",
-    "ultralytics>=8.4.33",
     "pyyaml>=6.0.3",
 ]
 

@@ -6,12 +6,11 @@ import cv2
 
 from baseball_lab.analyzers.base import BaseAnalyzer
 from baseball_lab.core.pose import PoseAnalyzer
-from baseball_lab.analyzers.bat import BatAnalyzer
 
 
 class SwingAnalyzer:
     """
-    ポーズ解析とバット解析を用いて、スイングを統合的に解析するクラス。
+    ポーズ解析を用いて、スイングを統合的に解析するクラス。
     """
 
     def __init__(
@@ -23,7 +22,6 @@ class SwingAnalyzer:
         if analyzers is None:
             self.analyzers = [
                 PoseAnalyzer(player_height_m=player_height_m, config=config),
-                BatAnalyzer(config=config),
             ]
         else:
             self.analyzers = analyzers

@@ -32,5 +32,5 @@ make run    # 解析と可視化の実行
 
 ## 🛠️ 技術スタック
 - **Environment**: [uv](https://docs.astral.sh/uv/)
-- **Analysis**: Mediapipe, OpenCV, YOLO
+- **Analysis**: Mediapipe, OpenCV
 - **External**: yt-dlp, Google API Client

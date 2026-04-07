@@ -148,9 +148,10 @@ class PoseAnalyzer(BaseAnalyzer):
                 if current_body_norm > self._max_body_norm:
                     self._max_body_norm = current_body_norm
 
-        m_per_norm = (self.player_height_m * self.BODY_HEIGHT_TO_STEM_RATIO) / max(
+        raw_m_per_norm = (self.player_height_m * self.BODY_HEIGHT_TO_STEM_RATIO) / max(
             self._max_body_norm, 0.01
         )
+        m_per_norm = self._smooth_metric("m_per_norm", raw_m_per_norm, weight=0.05)
 
         # 2. グリップ位置（拳の重心）の算出
         curr_grip_raw = None

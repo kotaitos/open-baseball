@@ -31,10 +31,6 @@ analyzer:
       min_pose_presence_confidence: 0.5
       min_tracking_confidence: 0.6
 
-  bat:
-    # ... (既存のbat設定) ...
-    max_speed_kmh: 150.0
-
 # 動画ごとの切り出し設定（秒）
 trim_settings:
   # 動画ファイル名 (拡張子なし): {start: 開始秒, end: 終了秒}
